@@ -1,11 +1,7 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export default auth((req) => {
-  if (!req.auth) {
-    return NextResponse.redirect(new URL("/kirjaudu", req.url));
-  }
-});
+export const { auth: middleware } = NextAuth(authConfig);
 
 export const config = {
   matcher: [
