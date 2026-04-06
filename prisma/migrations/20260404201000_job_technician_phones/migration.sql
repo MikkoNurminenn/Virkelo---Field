@@ -1,0 +1,5 @@
+ALTER TABLE "Job"
+ADD COLUMN "technicianPhones" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+
+ALTER TABLE "Job"
+DROP COLUMN "scheduledWindow";
