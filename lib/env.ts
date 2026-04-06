@@ -31,6 +31,7 @@ export const env = {
 
 if (
   process.env.NODE_ENV === "production" &&
+  process.env.NEXT_PHASE !== "phase-production-build" &&
   env.authSecret === "dev-secret-change-me"
 ) {
   throw new Error(
