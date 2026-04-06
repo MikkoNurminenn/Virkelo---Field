@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PGP Operointi
 
-## Getting Started
+Sisäinen Next.js + Prisma -sovellus PGP Putki Oy:n keikkojen hallintaan, dokumentointiin ja kuvien tallennukseen.
 
-First, run the development server:
+## Mitä mukana on
+
+- sähköpostilinkillä toimiva kirjautuminen (`Auth.js` + Resend)
+- aktiiviset keikat, omat keikat, arkisto ja ilmoitukset
+- keikan luonti, työn alle ottaminen, palautus avoimeksi, peruminen ja uudelleenavaus
+- toteutusraportti, muistiinpanot ja suojattu kuvagalleria per keikka
+- admin-näkymä käyttäjien aktivointiin ja piilotettujen keikkojen hallintaan
+- Railway-yhteensopiva deploy-konfiguraatio PostgreSQL:lle ja private bucket -kuvatallennukselle
+
+## Kehitys
+
+1. Kopioi `.env.example` -> `.env`.
+2. Lisää PostgreSQL-, Resend- ja bucket-ympäristömuuttujat.
+3. Aja:
 
 ```bash
+npm install
+npm run db:generate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Jos käytössä on paikallinen PostgreSQL:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run db:migrate
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Testit ja build
 
-## Learn More
+```bash
+npm run test
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Railway
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`railway.json` ajaa deployn yhteydessä:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run db:deploy`
+- healthcheckin polkuun `/api/health`
 
-## Deploy on Vercel
+Bucketille odotetaan S3-yhteensopivia ympäristömuuttujia:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `S3_ENDPOINT`
+- `S3_REGION`
+- `S3_BUCKET`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
