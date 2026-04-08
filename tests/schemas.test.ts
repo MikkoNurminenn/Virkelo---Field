@@ -5,6 +5,7 @@ import {
   parseCreateReminderForm,
   parseReminderActionForm,
 } from "@/lib/schemas";
+import { JOB_DESCRIPTION_FALLBACK } from "@/lib/constants";
 
 const createFormData = () => {
   const formData = new FormData();
@@ -46,6 +47,15 @@ describe("job schema parsing", () => {
     formData.set("title", "");
 
     expect(() => parseCreateJobForm(formData)).toThrow();
+  });
+
+  it("fills a fallback description when omitted", () => {
+    const formData = createFormData();
+    formData.delete("description");
+
+    const result = parseCreateJobForm(formData);
+
+    expect(result.description).toBe(JOB_DESCRIPTION_FALLBACK);
   });
 });
 

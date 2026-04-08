@@ -20,7 +20,7 @@ export function PhoneListInput({
   name,
   values = [],
 }: PhoneListInputProps) {
-  const [rows, setRows] = useState(values.length > 0 ? values : [""]);
+  const [rows, setRows] = useState(values.length > 0 ? values : []);
 
   const updateRow = (index: number, value: string) => {
     setRows((current) =>
@@ -35,7 +35,7 @@ export function PhoneListInput({
   const removeRow = (index: number) => {
     setRows((current) => {
       if (current.length === 1) {
-        return [""];
+        return [];
       }
 
       return current.filter((_, rowIndex) => rowIndex !== index);
@@ -46,27 +46,33 @@ export function PhoneListInput({
     <Field>
       <FieldLabel>{label}</FieldLabel>
       <div className="grid gap-3">
-        {rows.map((value, index) => (
-          <div className="flex items-center gap-2" key={`${name}-${index}`}>
-            <Input
-              autoComplete="tel"
-              name={name}
-              onChange={(event) => updateRow(index, event.target.value)}
-              placeholder="Esim. 040 123 4567"
-              type="tel"
-              value={value}
-            />
-            <Button
-              aria-label={`Poista numero ${index + 1}`}
-              onClick={() => removeRow(index)}
-              size="icon-sm"
-              type="button"
-              variant="outline"
-            >
-              <Trash2Icon className="size-4" />
-            </Button>
+        {rows.length > 0 ? (
+          rows.map((value, index) => (
+            <div className="flex items-center gap-2" key={`${name}-${index}`}>
+              <Input
+                autoComplete="tel"
+                name={name}
+                onChange={(event) => updateRow(index, event.target.value)}
+                placeholder="Esim. 040 123 4567"
+                type="tel"
+                value={value}
+              />
+              <Button
+                aria-label={`Poista numero ${index + 1}`}
+                onClick={() => removeRow(index)}
+                size="icon-sm"
+                type="button"
+                variant="outline"
+              >
+                <Trash2Icon className="size-4" />
+              </Button>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+            Numeroita ei tarvitse lisätä, ellei niille ole tarvetta.
           </div>
-        ))}
+        )}
       </div>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       <div className="flex justify-start">

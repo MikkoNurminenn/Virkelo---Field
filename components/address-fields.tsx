@@ -16,6 +16,7 @@ import {
 type AddressFieldsProps = {
   addressDefaultValue?: string
   areaDefaultValue?: string
+  showArea?: boolean
 }
 
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
@@ -23,6 +24,7 @@ const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 export function AddressFields({
   addressDefaultValue,
   areaDefaultValue,
+  showArea = true,
 }: AddressFieldsProps) {
   const MapsIcon = appIcons.maps
   const [mapsReady, setMapsReady] = useState(false)
@@ -134,17 +136,19 @@ export function AddressFields({
         </FieldDescription>
       </Field>
 
-      <Field>
-        <FieldLabel htmlFor="area">Alue</FieldLabel>
-        <Input
-          autoComplete="address-level2"
-          defaultValue={areaDefaultValue}
-          id="area"
-          name="area"
-          placeholder="Täyttyy automaattisesti, mutta on muokattavissa"
-          ref={areaRef}
-        />
-      </Field>
+      {showArea ? (
+        <Field>
+          <FieldLabel htmlFor="area">Alue</FieldLabel>
+          <Input
+            autoComplete="address-level2"
+            defaultValue={areaDefaultValue}
+            id="area"
+            name="area"
+            placeholder="Täyttyy automaattisesti, mutta on muokattavissa"
+            ref={areaRef}
+          />
+        </Field>
+      ) : null}
     </>
   )
 }

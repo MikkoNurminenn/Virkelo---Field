@@ -14,6 +14,7 @@ type JobCardProps = {
     id: string;
     title: string;
     description: string;
+    jobNumber: string | null;
     address: string;
     area: string | null;
     scheduledDate: Date;
@@ -47,9 +48,10 @@ export const JobCard = ({ job }: JobCardProps) => (
           <CardDescription className="max-w-2xl text-sm leading-6 text-muted-foreground">
             {job.description}
           </CardDescription>
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">
-            {job.customerName}
-          </p>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">
+            <span>{job.customerName}</span>
+            {job.jobNumber ? <span className="rounded-full border border-border/70 px-2 py-1 tracking-[0.16em]">Työnro {job.jobNumber}</span> : null}
+          </div>
         </div>
 
         <JobStatusBadge status={job.status} />

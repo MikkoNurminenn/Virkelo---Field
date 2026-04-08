@@ -1,14 +1,16 @@
 import { JobAttachmentKind } from "@prisma/client";
 import { z } from "zod";
 
-import { CUSTOMER_DEFAULT } from "@/lib/constants";
+import { CUSTOMER_DEFAULT, JOB_DESCRIPTION_FALLBACK } from "@/lib/constants";
 import { isAllowedImageContentType, isSafeRedirectPath } from "@/lib/security";
 
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => value || undefined)
-  .optional();
+const optionalText = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  return value;
+}, z.string().trim().transform((value) => value || undefined).optional());
 
 export const uploadedAttachmentSchema = z.object({
   storageKey: z.string().min(1),
@@ -41,6 +43,22 @@ const coerceDate = z.coerce.date({
 
 const technicianPhoneSchema = z.string().trim().min(3, "Huoltomiehen numeron pitää olla kelvollinen.");
 
+const optionalHours = z.preprocess((value) => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim().replace(",", ".");
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}, z.number().positive("Tuntien pitää olla suurempi kuin 0.").max(24, "Tuntien pitää olla 24 tai vähemmän.").optional());
+
 const parseTechnicianPhones = (formData: FormData) =>
   z
     .array(technicianPhoneSchema)
@@ -56,6 +74,7 @@ export const parseCreateJobForm = (formData: FormData) => {
   const values = {
     title: formData.get("title"),
     description: formData.get("description"),
+    jobNumber: formData.get("jobNumber"),
     address: formData.get("address"),
     area: formData.get("area"),
     scheduledDate: formData.get("scheduledDate"),
@@ -65,7 +84,8 @@ export const parseCreateJobForm = (formData: FormData) => {
 
   const schema = z.object({
     title: nonEmptyString("Otsikko"),
-    description: nonEmptyString("Kuvaus"),
+    description: optionalText,
+    jobNumber: optionalText,
     address: nonEmptyString("Osoite"),
     area: optionalText,
     scheduledDate: coerceDate,
@@ -77,6 +97,7 @@ export const parseCreateJobForm = (formData: FormData) => {
 
   return {
     ...parsed,
+    description: parsed.description ?? JOB_DESCRIPTION_FALLBACK,
     customerName: parsed.customerName ?? CUSTOMER_DEFAULT,
     technicianPhones: parseTechnicianPhones(formData),
     referenceAttachments: parseAttachments(formData.get("referenceAttachments")),
@@ -88,7 +109,8 @@ export const parseUpdateJobForm = (formData: FormData) => {
     .object({
       jobId: nonEmptyString("Keikka"),
       title: nonEmptyString("Otsikko"),
-      description: nonEmptyString("Kuvaus"),
+      description: optionalText,
+      jobNumber: optionalText,
       address: nonEmptyString("Osoite"),
       area: optionalText,
       scheduledDate: coerceDate,
@@ -99,6 +121,7 @@ export const parseUpdateJobForm = (formData: FormData) => {
       jobId: formData.get("jobId"),
       title: formData.get("title"),
       description: formData.get("description"),
+      jobNumber: formData.get("jobNumber"),
       address: formData.get("address"),
       area: formData.get("area"),
       scheduledDate: formData.get("scheduledDate"),
@@ -108,6 +131,7 @@ export const parseUpdateJobForm = (formData: FormData) => {
 
   return {
     ...parsed,
+    description: parsed.description ?? JOB_DESCRIPTION_FALLBACK,
     technicianPhones: parseTechnicianPhones(formData),
   };
 };
@@ -148,6 +172,23 @@ export const parseNoteForm = (formData: FormData) =>
     .parse({
       jobId: formData.get("jobId"),
       message: formData.get("message"),
+    });
+
+export const parseWorkLogForm = (formData: FormData) =>
+  z
+    .object({
+      jobId: nonEmptyString("Keikka"),
+      workDate: coerceDate,
+      hours: optionalHours,
+      materials: optionalText,
+      note: optionalText,
+    })
+    .parse({
+      jobId: formData.get("jobId"),
+      workDate: formData.get("workDate"),
+      hours: formData.get("hours"),
+      materials: formData.get("materials"),
+      note: formData.get("note"),
     });
 
 export const parseCompleteJobForm = (formData: FormData) =>

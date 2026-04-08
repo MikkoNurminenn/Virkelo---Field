@@ -8,6 +8,7 @@ import {
 } from "@prisma/client";
 
 export const CUSTOMER_DEFAULT = "Helsingin kaupunki";
+export const JOB_DESCRIPTION_FALLBACK = "Työkuvaus tarkentuu työmaalla.";
 
 export const jobStatusLabels: Record<JobStatus, string> = {
   OPEN: "Avoin",
@@ -33,12 +34,14 @@ export const attachmentKindLabels: Record<JobAttachmentKind, string> = {
   WORK: "Työkuva",
   BEFORE: "Ennen",
   AFTER: "Jälkeen",
+  RECEIPT: "Kuitti",
 };
 
 export const jobEntryTypeLabels: Record<JobEntryType, string> = {
   NOTE: "Muistiinpano",
   STATUS_CHANGE: "Tilapäivitys",
   COMPLETION_REPORT: "Valmistumisraportti",
+  WORK_LOG: "Työpäivä",
 };
 
 export const notificationLabels: Record<NotificationType, string> = {

@@ -31,7 +31,7 @@ import {
   canTakeJob,
 } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
-import { parseAttachmentForm, parseCompleteJobForm, parseCreateJobForm, parseCreateReminderForm, parseNoteForm, parseReminderActionForm, parseUpdateJobForm, parseUserToggleForm, uploadedAttachmentSchema } from "@/lib/schemas";
+import { parseAttachmentForm, parseCompleteJobForm, parseCreateJobForm, parseCreateReminderForm, parseNoteForm, parseReminderActionForm, parseUpdateJobForm, parseUserToggleForm, parseWorkLogForm, uploadedAttachmentSchema } from "@/lib/schemas";
 import { isAttachmentKeyOwnedByUser } from "@/lib/security";
 import { requireCurrentUser } from "@/lib/session";
 
@@ -143,11 +143,12 @@ export const createJobAction = async (formData: FormData) => {
       data: {
         title: values.title,
         description: values.description,
+        jobNumber: values.jobNumber ?? null,
         address: values.address,
-        area: values.area,
+        area: values.area ?? null,
         scheduledDate: values.scheduledDate,
         technicianPhones: values.technicianPhones,
-        notes: values.notes,
+        notes: values.notes ?? null,
         customerName: values.customerName,
         creatorId: user.id,
       },
@@ -208,11 +209,12 @@ export const updateJobAction = async (formData: FormData) => {
       data: {
         title: values.title,
         description: values.description,
+        jobNumber: values.jobNumber ?? null,
         address: values.address,
-        area: values.area,
+        area: values.area ?? null,
         scheduledDate: values.scheduledDate,
         technicianPhones: values.technicianPhones,
-        notes: values.notes,
+        notes: values.notes ?? null,
         customerName: values.customerName,
       },
     });
@@ -527,6 +529,60 @@ export const addJobNoteAction = async (formData: FormData) => {
       type: JobEntryType.NOTE,
       message: values.message,
     },
+  });
+
+  refreshApp(values.jobId);
+  redirect(`/keikat/${values.jobId}`);
+};
+
+export const addJobWorkLogAction = async (formData: FormData) => {
+  const user = await requireCurrentUser();
+  const values = parseWorkLogForm(formData);
+  const receiptAttachments = parseUploadedAttachments(formData, "receiptAttachments", user.id);
+  const job = await getJobForAction(values.jobId);
+
+  if (!canEditJob(user, job)) {
+    throw new Error("Sinulla ei ole oikeutta lisätä työpäiväkirjausta.");
+  }
+
+  if (!values.hours && !values.materials && !values.note && receiptAttachments.length === 0) {
+    throw new Error("Lisää tunnit, tavaralista, huomio tai kuittikuva.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const createdReceipts = await Promise.all(
+      receiptAttachments.map((attachment) =>
+        tx.jobAttachment.create({
+          data: {
+            jobId: values.jobId,
+            kind: JobAttachmentKind.RECEIPT,
+            storageKey: attachment.storageKey,
+            caption: attachment.fileName,
+            uploadedById: user.id,
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ),
+    );
+
+    await tx.jobEntry.create({
+      data: {
+        jobId: values.jobId,
+        authorId: user.id,
+        type: JobEntryType.WORK_LOG,
+        message: "Työpäivä kirjattiin.",
+        metadata: {
+          workDate: values.workDate.toISOString(),
+          hours: values.hours,
+          materials: values.materials,
+          note: values.note,
+          receiptCount: createdReceipts.length,
+          receiptAttachmentIds: createdReceipts.map((attachment) => attachment.id),
+        },
+      },
+    });
   });
 
   refreshApp(values.jobId);

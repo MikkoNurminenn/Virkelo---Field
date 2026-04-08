@@ -23,6 +23,7 @@ export const AttachmentGallery = ({ attachments }: AttachmentGalleryProps) => {
       WORK: [],
       BEFORE: [],
       AFTER: [],
+      RECEIPT: [],
     },
   );
 

@@ -12,6 +12,17 @@ export const formatDateTime = (date?: Date | null) =>
 export const formatOptionalText = (value?: string | null) =>
   value?.trim() ? value : "Ei annettu";
 
+export const formatHours = (value?: number | null) => {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "Ei kirjattu";
+  }
+
+  return `${new Intl.NumberFormat("fi-FI", {
+    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+    maximumFractionDigits: 2,
+  }).format(value)} h`;
+};
+
 export const formatPerson = (value?: { name: string | null; email: string } | null) =>
   value?.name?.trim() || value?.email || "Ei määritelty";
 
